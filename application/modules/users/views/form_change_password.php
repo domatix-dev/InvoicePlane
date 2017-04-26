@@ -1,41 +1,47 @@
 <form method="post" class="form-horizontal">
 
-	<div class="headerbar">
-		<h1><?php echo lang('change_password'); ?></h1>
-		<?php echo $this->layout->load_view('layout/header_buttons'); ?>
-	</div>
+    <input type="hidden" name="_ip_csrf" value="<?= $this->security->get_csrf_hash() ?>">
 
-	<div class="content">
+    <div id="headerbar">
+        <h1 class="headerbar-title"><?php _trans('change_password'); ?></h1>
+        <?php echo $this->layout->load_view('layout/header_buttons'); ?>
+    </div>
 
-		<?php $this->layout->load_view('layout/alerts'); ?>
+    <div id="content">
 
-			<fieldset>
-				<legend><?php echo lang('change_password'); ?></legend>
+        <div class="row">
+            <div class="col-xs-12 col-md-6 col-md-offset-3">
 
-				<div class="form-group">
-                    <div class="col-xs-12 col-sm-3 text-right text-left-xs">
-					    <label class="control-label"><?php echo lang('password'); ?>: </label>
+                <?php $this->layout->load_view('layout/alerts'); ?>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <?php _trans('change_password'); ?>
                     </div>
-                    <div class="col-xs-12 col-sm-6">
-						<input type="password" name="user_password" id="user_password"
-                            class="form-control">
-					</div>
-				</div>
 
-				<div class="form-group">
-                    <div class="col-xs-12 col-sm-3 text-right text-left-xs">
-					    <label class="control-label">
-                            <?php echo lang('verify_password'); ?>
-                        </label>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="user_password">
+                                <?php _trans('password'); ?>
+                            </label>
+                            <input type="password" name="user_password" id="user_password"
+                                   class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="user_passwordv">
+                                <?php _trans('verify_password'); ?>
+                            </label>
+                            <input type="password" name="user_passwordv" id="user_passwordv"
+                                   class="form-control">
+                        </div>
                     </div>
-                    <div class="col-xs-12 col-sm-6">
-						<input type="password" name="user_passwordv" id="user_passwordv"
-                            class="form-control">
-					</div>
-				</div>
 
-			</fieldset>
+                </div>
 
-	</div>
-	
+            </div>
+        </div>
+
+    </div>
+
 </form>
