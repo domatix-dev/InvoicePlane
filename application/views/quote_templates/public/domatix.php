@@ -299,7 +299,7 @@ img{ width:auto; height:auto; }
 
 	            <br />
                 <div style="width:99%;">
-		            <img style="max-width: 100%;" src="http://portal.domatixonline.com/assets/default/img/footer_completo.png" alt="logo_footer" />
+		            <img style="max-width: 100%;" src="http://portal.domatix.com/assets/default/img/footer_completo.png" alt="logo_footer" />
 				</div>
 				<br />
 				<br />
