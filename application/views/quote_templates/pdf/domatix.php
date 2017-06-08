@@ -210,11 +210,9 @@ img{ width:auto; height:auto; }
                                 <td style="text-align: right;"><?php echo lang('total'); ?>:</td>
                                 <td style="text-align: right;"><?php echo format_currency($quote->quote_total); ?></td>
                             </tr>
-                            <tr>
-                            	<td colspan="2"><br /><br /><p class="text_cliente"><?php $CI = &get_instance();
-                              echo $CI->db->select('t1.user_custom_fieldvalue')->from('ip_user_custom t1')->join('ip_custom_fields t2', 't1.user_custom_fieldid = t2.custom_field_id')->where('t1.user_id', $quote->user_id)->where('t2.custom_field_label', 'Bank Account')->get()->row()->user_custom_fieldvalue; ?></p><br /></td>
-                            </tr>
                         </table>
+                        <br /><br /><p class="text_cliente"><?php $CI = &get_instance();
+                          echo $CI->db->select('t1.user_custom_fieldvalue')->from('ip_user_custom t1')->join('ip_custom_fields t2', 't1.user_custom_fieldid = t2.custom_field_id')->where('t1.user_id', $quote->user_id)->where('t2.custom_field_label', 'Bank Account')->get()->row()->user_custom_fieldvalue; ?></p><br />
                         <br /><br />
                     </td>
                 </tr>
@@ -236,7 +234,7 @@ img{ width:auto; height:auto; }
         </div>
         <div>
         </div>
-        <footer style="width:99%; position: absolute; top: 95%;">
+        <footer style="width: 100%; margin-right: 120px; position: absolute; top: 95%;">
             <img src="http://portal.domatix.com/assets/default/img/footer_completo.png" alt="logo_footer" />
         </footer>
 	</body>

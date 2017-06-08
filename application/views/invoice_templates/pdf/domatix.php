@@ -276,7 +276,7 @@
             <?php } ?>
         </div>   -->
 
-        <footer style="width:99%; position: absolute; top: 95%;">
+        <footer style="width: 100%; margin-right: 120px; position: absolute; top: 95%;">
           <p style="font-size:10px;"><?php $CI = &get_instance(); echo $CI->db->select('t1.user_custom_fieldvalue')->from('ip_user_custom t1')->join('ip_custom_fields t2', 't1.user_custom_fieldid = t2.custom_field_id')->where('t1.user_id', $invoice->user_id)->where('t2.custom_field_label', 'Notas')->get()->row()->user_custom_fieldvalue; ?></p>
           <div >
               <img src="http://portal.domatix.com/assets/default/img/footer_completo.png" alt="logo_footer" />
