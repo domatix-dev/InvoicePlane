@@ -1,205 +1,367 @@
-<script type="text/javascript">
-    $(function() {
-        $('#save_client_note').click(function()
-        {
-            $.post("<?php echo site_url('clients/ajax/save_client_note'); ?>",
+<script>
+    $(function () {
+        $('#save_client_note').click(function () {
+            $.post('<?php echo site_url('clients/ajax/save_client_note'); ?>',
                 {
                     client_id: $('#client_id').val(),
                     client_note: $('#client_note').val()
-                }, function(data) {
+                }, function (data) {
+                    <?php echo(IP_DEBUG ? 'console.log(data);' : ''); ?>
                     var response = JSON.parse(data);
-                    if (response.success == '1')
-                    {
+                    if (response.success === 1) {
                         // The validation was successful
                         $('.control-group').removeClass('error');
                         $('#client_note').val('');
 
+                        // Reload all notes
                         $('#notes_list').load("<?php echo site_url('clients/ajax/load_client_notes'); ?>",
                             {
                                 client_id: <?php echo $client->client_id; ?>
+                            }, function (response) {
+                                <?php echo(IP_DEBUG ? 'console.log(response);' : ''); ?>
                             });
-                    }
-                    else
-                    {
+                    } else {
                         // The validation was not successful
                         $('.control-group').removeClass('error');
                         for (var key in response.validation_errors) {
-                            $('#' + key).parent().parent().addClass('error');
+                            $('#' + key).parent().addClass('has-error');
                         }
                     }
                 });
         });
-
     });
 </script>
 
-<style>
-    body {
-        padding-bottom: 50px !important;
+<?php
+$locations = array();
+foreach ($custom_fields as $custom_field) {
+    if (array_key_exists($custom_field->custom_field_location, $locations)) {
+        $locations[$custom_field->custom_field_location] += 1;
+    } else {
+        $locations[$custom_field->custom_field_location] = 1;
     }
-</style>
+}
+?>
 
-<div class="headerbar">
-    <h1><?php echo $client->client_name; ?></h1>
+<div id="headerbar">
+    <h1 class="headerbar-title"><?php _htmlsc(format_client($client)); ?></h1>
 
-    <div class="pull-right btn-group">
-        <a href="#" class="btn btn-sm btn-default client-create-quote"
-           data-client-name="<?php echo $client->client_name; ?>">
-            <i class="fa fa-file"></i> <?php echo lang('create_quote'); ?>
-        </a>
-        <a href="#" class="btn btn-sm btn-default client-create-invoice" data-client-name="<?php echo $client->client_name; ?>"><i class="fa fa-file-text""></i> <?php echo lang('create_invoice'); ?></a>
-        <a href="<?php echo site_url('clients/form/' . $client->client_id); ?>"
-           class="btn btn-sm btn-default">
-            <i class="fa fa-edit"></i> <?php echo lang('edit'); ?>
-        </a>
-
-        <a class="btn btn-sm btn-danger"
-           href="<?php echo site_url('clients/delete/' . $client->client_id); ?>"
-           onclick="return confirm('<?php echo lang('delete_client_warning'); ?>');">
-            <i class="fa fa-trash-o"></i> <?php echo lang('delete'); ?>
-        </a>
+    <div class="headerbar-item pull-right">
+        <div class="btn-group btn-group-sm">
+            <a href="#" class="btn btn-default client-create-quote"
+               data-client-id="<?php echo $client->client_id; ?>">
+                <i class="fa fa-file"></i> <?php _trans('create_quote'); ?>
+            </a>
+            <a href="#" class="btn btn-default client-create-invoice"
+               data-client-id="<?php echo $client->client_id; ?>">
+                <i class="fa fa-file-text"></i> <?php _trans('create_invoice'); ?></a>
+            <a href="<?php echo site_url('clients/form/' . $client->client_id); ?>"
+               class="btn btn-default">
+                <i class="fa fa-edit"></i> <?php _trans('edit'); ?>
+            </a>
+            <a class="btn btn-danger"
+               href="<?php echo site_url('clients/delete/' . $client->client_id); ?>"
+               onclick="return confirm('<?php _trans('delete_client_warning'); ?>');">
+                <i class="fa fa-trash-o"></i> <?php _trans('delete'); ?>
+            </a>
+        </div>
     </div>
 
 </div>
 
-<div class="tabbable tabs-below">
+<ul id="submenu" class="nav nav-tabs nav-tabs-noborder">
+    <li class="active"><a data-toggle="tab" href="#clientDetails"><?php _trans('details'); ?></a></li>
+    <li><a data-toggle="tab" href="#clientQuotes"><?php _trans('quotes'); ?></a></li>
+    <li><a data-toggle="tab" href="#clientInvoices"><?php _trans('invoices'); ?></a></li>
+    <li><a data-toggle="tab" href="#clientPayments"><?php _trans('payments'); ?></a></li>
+</ul>
 
-    <div class="tab-content">
+<div id="content" class="tabbable tabs-below no-padding">
+    <div class="tab-content no-padding">
 
-        <div id="clientDetails" class="tab-pane tab-info active">
+        <div id="clientDetails" class="tab-pane tab-rich-content active">
 
             <?php $this->layout->load_view('layout/alerts'); ?>
 
-            <div class="profile">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 col-md-6">
 
-                <div class="primaryInfo row">
-
-                    <div class="pull-left">
-                        <h2><?php echo $client->client_name; ?></h2>
-                        <br>
-						<span>
-							<?php echo ($client->client_address_1) ? $client->client_address_1 . '<br>' : ''; ?>
-                            <?php echo ($client->client_address_2) ? $client->client_address_2 . '<br>' : ''; ?>
-                            <?php echo ($client->client_city) ? $client->client_city : ''; ?>
-                            <?php echo ($client->client_state) ? $client->client_state : ''; ?>
-                            <?php echo ($client->client_zip) ? $client->client_zip : ''; ?>
-                            <?php echo ($client->client_country) ? '<br>' . $client->client_country : ''; ?>
-						</span>
-                    </div>
-
-                    <div class="pull-right" style="text-align: right;">
-                        <span>
-                            <strong>
-                                <?php echo lang('total_billed'); ?>:
-                            </strong>
-                            <?php echo format_currency($client->client_invoice_total); ?>
-                        </span>
-                        <br>
-                        <span>
-                            <strong>
-                                <?php echo lang('total_paid'); ?>:
-                            </strong>
-                            <?php echo format_currency($client->client_invoice_paid); ?>
-                        </span>
-                        <br>
-                        <span>
-                            <strong>
-                                <?php echo lang('total_balance'); ?>:
-                            </strong>
-                            <?php echo format_currency($client->client_invoice_balance); ?>
-                        </span>
-                    </div>
+                    <h3><?php _htmlsc(format_client($client)); ?></h3>
+                    <p>
+                        <?php $this->layout->load_view('clients/partial_client_address'); ?>
+                    </p>
 
                 </div>
+                <div class="col-xs-12 col-sm-6 col-md-6">
 
-                <dl>
-                    <dt><span><?php echo lang('contact_information'); ?></span></dt>
-                    <?php if ($client->client_email) { ?>
-                        <dd><span><?php echo lang('email'); ?>:</span> <?php echo auto_link($client->client_email, 'email'); ?></dd>
-                    <?php } ?>
-                    <?php if ($client->client_phone) { ?>
-                        <dd><span><?php echo lang('phone'); ?>:</span> <?php echo $client->client_phone; ?></dd>
-                    <?php } ?>
-                    <?php if ($client->client_mobile) { ?>
-                        <dd><span><?php echo lang('mobile'); ?>:</span> <?php echo $client->client_mobile; ?></dd>
-                    <?php } ?>
-                    <?php if ($client->client_fax) { ?>
-                        <dd><span><?php echo lang('fax'); ?>:</span> <?php echo $client->client_fax; ?></dd>
-                    <?php } ?>
-                    <?php if ($client->client_web) { ?>
-                        <dd><span><?php echo lang('web'); ?>:</span> <?php echo auto_link($client->client_web,'url', TRUE); ?></dd>
-                    <?php } ?>
-                </dl>
+                    <table class="table table-bordered no-margin">
+                        <tr>
+                            <th>
+                                <?php _trans('language'); ?>
+                            </th>
+                            <td class="td-amount">
+                                <?php echo ucfirst($client->client_language); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <?php _trans('total_billed'); ?>
+                            </th>
+                            <td class="td-amount">
+                                <?php echo format_currency($client->client_invoice_total); ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <?php _trans('total_paid'); ?>
+                            </th>
+                            <th class="td-amount">
+                                <?php echo format_currency($client->client_invoice_paid); ?>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th>
+                                <?php _trans('total_balance'); ?>
+                            </th>
+                            <td class="td-amount">
+                                <?php echo format_currency($client->client_invoice_balance); ?>
+                            </td>
+                        </tr>
+                    </table>
 
-                <dl>
-                    <dt><span><?php echo lang('tax_information'); ?></span></dt>
-                    <?php if ($client->client_vat_id) { ?>
-                        <dd><span><?php echo lang('vat_id'); ?>:</span> <?php echo $client->client_vat_id; ?></dd>
-                    <?php } ?>
-                    <?php if ($client->client_tax_code) { ?>
-                        <dd><span><?php echo lang('tax_code'); ?>:</span> <?php echo $client->client_tax_code; ?></dd>
-                    <?php } ?>
-                </dl>
-
-                <dl class="profile-custom">
-                    <dt><span><?php echo lang('custom_fields'); ?></span></dt>
-                    <?php foreach ($custom_fields as $custom_field) { ?>
-                        <dd><span><?php echo $custom_field->custom_field_label; ?>: </span> <?php echo $client->{$custom_field->custom_field_column}; ?></dd>
-                    <?php } ?>
-                </dl>
-
-                <br>
-
+                </div>
             </div>
 
-            <div class="notes">
+            <hr>
 
-                <div id="notes_list">
-                    <?php echo $partial_notes; ?>
+            <div class="row">
+                <div class="col-xs-12 col-md-6">
+
+                    <div class="panel panel-default no-margin">
+                        <div class="panel-heading"><?php _trans('contact_information'); ?></div>
+                        <div class="panel-body table-content">
+                            <table class="table no-margin">
+                                <?php if ($client->client_email) : ?>
+                                    <tr>
+                                        <th><?php _trans('email'); ?></th>
+                                        <td><?php echo auto_link($client->client_email, 'email'); ?></td>
+                                    </tr>
+                                <?php endif; ?>
+                                <?php if ($client->client_phone) : ?>
+                                    <tr>
+                                        <th><?php _trans('phone'); ?></th>
+                                        <td><?php _htmlsc($client->client_phone); ?></td>
+                                    </tr>
+                                <?php endif; ?>
+                                <?php if ($client->client_mobile) : ?>
+                                    <tr>
+                                        <th><?php _trans('mobile'); ?></th>
+                                        <td><?php _htmlsc($client->client_mobile); ?></td>
+                                    </tr>
+                                <?php endif; ?>
+                                <?php if ($client->client_fax) : ?>
+                                    <tr>
+                                        <th><?php _trans('fax'); ?></th>
+                                        <td><?php _htmlsc($client->client_fax); ?></td>
+                                    </tr>
+                                <?php endif; ?>
+                                <?php if ($client->client_web) : ?>
+                                    <tr>
+                                        <th><?php _trans('web'); ?></th>
+                                        <td><?php echo auto_link($client->client_web, 'url', true); ?></td>
+                                    </tr>
+                                <?php endif; ?>
+
+                                <?php foreach ($custom_fields as $custom_field) : ?>
+                                    <?php if ($custom_field->custom_field_location != 2) {
+                                        continue;
+                                    } ?>
+                                    <tr>
+                                        <?php
+                                        $column = $custom_field->custom_field_label;
+                                        $value = $this->mdl_client_custom->form_value('cf_' . $custom_field->custom_field_id);
+                                        ?>
+                                        <th><?php _htmlsc($column); ?></th>
+                                        <td><?php _htmlsc($value); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
+                <div class="col-xs-12 col-md-6">
+                    <div class="panel panel-default no-margin">
 
-                <form>
-                    <input type="hidden" name="client_id" id="client_id" value="<?php echo $client->client_id; ?>">
-                    <fieldset>
+                        <div class="panel-heading"><?php _trans('tax_information'); ?></div>
+                        <div class="panel-body table-content">
+                            <table class="table no-margin">
+                                <?php if ($client->client_vat_id) : ?>
+                                    <tr>
+                                        <th><?php _trans('vat_id'); ?></th>
+                                        <td><?php _htmlsc($client->client_vat_id); ?></td>
+                                    </tr>
+                                <?php endif; ?>
+                                <?php if ($client->client_tax_code) : ?>
+                                    <tr>
+                                        <th><?php _trans('tax_code'); ?></th>
+                                        <td><?php _htmlsc($client->client_tax_code); ?></td>
+                                    </tr>
+                                <?php endif; ?>
 
-                        <legend><?php echo lang('notes'); ?></legend>
-                        <div class="form-group">
-                            <div class="controls">
-                                <textarea id="client_note" class="form-control"></textarea>
+                                <?php foreach ($custom_fields as $custom_field) : ?>
+                                    <?php if ($custom_field->custom_field_location != 4) {
+                                        continue;
+                                    } ?>
+                                    <tr>
+                                        <?php
+                                        $column = $custom_field->custom_field_label;
+                                        $value = $this->mdl_client_custom->form_value('cf_' . $custom_field->custom_field_id);
+                                        ?>
+                                        <th><?php _htmlsc($column); ?></th>
+                                        <td><?php _htmlsc($value); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <?php if ($client->client_surname != ""): //Client is not a company ?>
+                <hr>
+
+                <div class="row">
+                    <div class="col-xs-12 col-md-6">
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <?php _trans('personal_information'); ?>
+                            </div>
+
+                            <div class="panel-body table-content">
+                                <table class="table no-margin">
+                                    <tr>
+                                        <th><?php _trans('birthdate'); ?></th>
+                                        <td><?php echo format_date($client->client_birthdate); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th><?php _trans('gender'); ?></th>
+                                        <td><?php echo format_gender($client->client_gender) ?></td>
+                                    </tr>
+                                    <?php if ($this->mdl_settings->setting('sumex') == '1'): ?>
+                                        <tr>
+                                            <th><?php _trans('sumex_ssn'); ?></th>
+                                            <td><?php echo format_avs($client->client_avs) ?></td>
+                                        </tr>
+
+                                        <tr>
+                                            <th><?php _trans('sumex_insurednumber'); ?></th>
+                                            <td><?php _htmlsc($client->client_insurednumber) ?></td>
+                                        </tr>
+
+                                        <tr>
+                                            <th><?php _trans('sumex_veka'); ?></th>
+                                            <td><?php _htmlsc($client->client_veka) ?></td>
+                                        </tr>
+                                    <?php endif; ?>
+
+                                    <?php foreach ($custom_fields as $custom_field) : ?>
+                                        <?php if ($custom_field->custom_field_location != 3) {
+                                            continue;
+                                        } ?>
+                                        <tr>
+                                            <?php
+                                            $column = $custom_field->custom_field_label;
+                                            $value = $this->mdl_client_custom->form_value('cf_' . $custom_field->custom_field_id);
+                                            ?>
+                                            <th><?php _htmlsc($column); ?></th>
+                                            <td><?php _htmlsc($value); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
                             </div>
                         </div>
 
-                        <input type="button" id="save_client_note" class="btn btn-default"
-                               value="<?php echo lang('add_notes'); ?>">
-                    </fieldset>
-                </form>
+                    </div>
+                </div>
+            <?php endif; ?>
 
+            <?php
+            if ($custom_fields) : ?>
+                <hr>
+
+                <div class="row">
+                    <div class="col-xs-12 col-md-6">
+                        <div class="panel panel-default no-margin">
+
+                            <div class="panel-heading">
+                                <?php _trans('custom_fields'); ?>
+                            </div>
+                            <div class="panel-body table-content">
+                                <table class="table no-margin">
+                                    <?php foreach ($custom_fields as $custom_field) : ?>
+                                        <?php if ($custom_field->custom_field_location != 0) {
+                                            continue;
+                                        } ?>
+                                        <tr>
+                                            <?php
+                                            $column = $custom_field->custom_field_label;
+                                            $value = $this->mdl_client_custom->form_value('cf_' . $custom_field->custom_field_id);
+                                            ?>
+                                            <th><?php _htmlsc($column); ?></th>
+                                            <td><?php _htmlsc($value); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <hr>
+
+            <div class="row">
+                <div class="col-xs-12 col-md-6">
+
+                    <div class="panel panel-default no-margin">
+                        <div class="panel-heading">
+                            <?php _trans('notes'); ?>
+                        </div>
+                        <div class="panel-body">
+                            <div id="notes_list">
+                                <?php echo $partial_notes; ?>
+                            </div>
+                            <input type="hidden" name="client_id" id="client_id"
+                                   value="<?php echo $client->client_id; ?>">
+                            <div class="input-group">
+                                <textarea id="client_note" class="form-control" rows="2" style="resize:none"></textarea>
+                                <span id="save_client_note" class="input-group-addon btn btn-default">
+                                    <?php _trans('add_note'); ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
+
         </div>
 
-        <div id="clientQuotes" class="tab-pane">
+        <div id="clientQuotes" class="tab-pane table-content">
             <?php echo $quote_table; ?>
         </div>
 
-        <div id="clientInvoices" class="tab-pane">
+        <div id="clientInvoices" class="tab-pane table-content">
             <?php echo $invoice_table; ?>
         </div>
 
-        <div id="clientPayments" class="tab-pane">
+        <div id="clientPayments" class="tab-pane table-content">
             <?php echo $payment_table; ?>
         </div>
     </div>
 
 </div>
-
-<nav class="navbar navbar-inverse navbar-fixed-bottom" role="navigation"
-     style="max-height: 50px !important;">
-    <div class="container-fluid">
-        <ul class="nav navbar-nav">
-            <li class="active"><a data-toggle="tab" href="#clientDetails"><?php echo lang('details'); ?></a></li>
-            <li><a data-toggle="tab" href="#clientQuotes"><?php echo lang('quotes'); ?></a></li>
-            <li><a data-toggle="tab" href="#clientInvoices"><?php echo lang('invoices'); ?></a></li>
-            <li><a data-toggle="tab" href="#clientPayments"><?php echo lang('payments'); ?></a></li>
-        </ul>
-    </div>
-</nav>
